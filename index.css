@@ -1,5 +1,4 @@
-:root {
-    width: 100%;
+body {
     height: 4096px;
     font-family: 'Outfit';
 }
@@ -10,3 +9,7 @@
     background: white;
 }
 
+#intro-img {
+    width: auto;
+    height: 1024px;
+}
