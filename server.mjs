@@ -19,6 +19,12 @@ app.get('/login', (req, res) => {
 
 app.get('/callback', async (req, res) => {
   const code = req.query.code || null;
+  console.log('Authorization code:', code); // Log the authorization code
+
+  if (!code) {
+    res.status(400).send('No code provided');
+    return;
+  }
 
   try {
     const response = await axios.post(
@@ -36,91 +42,88 @@ app.get('/callback', async (req, res) => {
     );
 
     const access_token = response.data.access_token;
+    console.log('Access token:', access_token); // Log the access token
+
+    // Redirect to create_playlist route with the access token
     res.redirect(`/create_playlist?access_token=${access_token}`);
   } catch (error) {
-    console.error('Error during authentication', error);
+    console.error('Error during authentication', error.response ? error.response.data : error.message);
     res.send('Error during authentication');
   }
 });
 
-// potentially add a genre parameter?
-async function createPlaylist(playlistName, bpm) {
-  app.get('/create_playlist', async (req, res) => {
-    const access_token = req.query.access_token;
+app.get('/create_playlist', async (req, res) => {
+  const access_token = req.query.access_token;
+  console.log('Access token in create_playlist:', access_token); // Log the access token
 
-    try {
-      // Get user ID
-      const userResponse = await axios.get('https://api.spotify.com/v1/me', {
+  try {
+    // Get user ID
+    const userResponse = await axios.get('https://api.spotify.com/v1/me', {
+      headers: {
+        'Authorization': `Bearer ${access_token}`
+      }
+    });
+
+    const user_id = userResponse.data.id;
+    console.log('User ID:', user_id); // Log the user ID
+
+    // Create a new playlist
+    const playlistResponse = await axios.post(
+      `https://api.spotify.com/v1/users/${user_id}/playlists`,
+      {
+        name: 'Generated Playlist',
+        public: false
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${access_token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    const playlist_id = playlistResponse.data.id;
+    console.log('Playlist ID:', playlist_id); // Log the playlist ID
+
+    // Search for tracks with specified BPM
+    const bpm = parseInt(req.query.bpm) || 120;
+    const minBpm = Math.max(bpm - 10, 50);
+    const maxBpm = Math.min(bpm + 10, 300);
+
+    const tracksResponse = await axios.get(
+      `https://api.spotify.com/v1/recommendations?limit=10&seed_genres=pop&min_tempo=${minBpm}&max_tempo=${maxBpm}`,
+      {
         headers: {
           'Authorization': `Bearer ${access_token}`
         }
-      });
-
-      const user_id = userResponse.data.id;
-
-      // Create a new playlist
-      const playlistResponse = await axios.post(
-        `https://api.spotify.com/v1/users/${user_id}/playlists`,
-        {
-          name: playlistName,
-          public: false
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${access_token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      const playlist_id = playlistResponse.data.id;
-
-      // Search for tracks with 120 ± 10 BPM
-      if (bpm < 50) {
-        bpm = 50;
       }
+    );
 
-      if (bpm > 300) {
-        bpm = 300;
+    const trackUris = tracksResponse.data.tracks.map(track => track.uri);
+    console.log('Track URIs:', trackUris); // Log the track URIs
+
+    // Add tracks to the playlist
+    await axios.post(
+      `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`,
+      {
+        uris: trackUris
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${access_token}`,
+          'Content-Type': 'application/json'
+        }
       }
+    );
 
-      const minBpm = bpm - 10;
-      const maxBpm = bpm + 10;
-      const tracksResponse = await axios.get(
-        `https://api.spotify.com/v1/recommendations?limit=10&seed_genres=pop&min_tempo=${minBpm}&max_tempo=${maxBpm}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${access_token}`
-          }
-        }
-      );
-
-      const trackUris = tracksResponse.data.tracks.map(track => track.uri);
-
-      // Add tracks to the playlist
-      await axios.post(
-        `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`,
-        {
-          uris: trackUris
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${access_token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      const playlistUrl = playlistResponse.data.external_urls.spotify;
-      res.send(`Playlist created and populated: <a href="${playlistUrl}" target="_blank">${playlistUrl}</a>`);
-    } catch (error) {
-      console.error('Error creating playlist', error);
-      res.status(500).send('Error creating playlist');
-    }
-  });
-}
+    const playlistUrl = playlistResponse.data.external_urls.spotify;
+    res.send(`Playlist created and populated: <a href="${playlistUrl}" target="_blank">${playlistUrl}</a>`);
+  } catch (error) {
+    console.error('Error creating playlist', error.response ? error.response.data : error.message);
+    res.status(500).send('Error creating playlist');
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
-  createPlaylist('test', 140);
 });
