@@ -47,6 +47,7 @@ app.get('/create_playlist', async (req, res) => {
   const access_token = req.query.access_token;
 
   try {
+    // Get user ID
     const userResponse = await axios.get('https://api.spotify.com/v1/me', {
       headers: {
         'Authorization': `Bearer ${access_token}`
@@ -55,6 +56,7 @@ app.get('/create_playlist', async (req, res) => {
 
     const user_id = userResponse.data.id;
 
+    // Create a new playlist
     const playlistResponse = await axios.post(
       `https://api.spotify.com/v1/users/${user_id}/playlists`,
       {
@@ -69,8 +71,38 @@ app.get('/create_playlist', async (req, res) => {
       }
     );
 
+    const playlist_id = playlistResponse.data.id;
+
+    // Search for tracks with 120 ± 10 BPM
+    const minBpm = 110;
+    const maxBpm = 130;
+    const tracksResponse = await axios.get(
+      `https://api.spotify.com/v1/recommendations?limit=10&seed_genres=pop&min_tempo=${minBpm}&max_tempo=${maxBpm}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${access_token}`
+        }
+      }
+    );
+
+    const trackUris = tracksResponse.data.tracks.map(track => track.uri);
+
+    // Add tracks to the playlist
+    await axios.post(
+      `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`,
+      {
+        uris: trackUris
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${access_token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
     const playlistUrl = playlistResponse.data.external_urls.spotify;
-    res.send(`Playlist created: <a href="${playlistUrl}" target="_blank">${playlistUrl}</a>`);
+    res.send(`Playlist created and populated: <a href="${playlistUrl}" target="_blank">${playlistUrl}</a>`);
   } catch (error) {
     console.error('Error creating playlist', error);
     res.status(500).send('Error creating playlist');
