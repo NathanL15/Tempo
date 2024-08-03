@@ -43,72 +43,84 @@ app.get('/callback', async (req, res) => {
   }
 });
 
-app.get('/create_playlist', async (req, res) => {
-  const access_token = req.query.access_token;
+// potentially add a genre parameter?
+async function createPlaylist(playlistName, bpm) {
+  app.get('/create_playlist', async (req, res) => {
+    const access_token = req.query.access_token;
 
-  try {
-    // Get user ID
-    const userResponse = await axios.get('https://api.spotify.com/v1/me', {
-      headers: {
-        'Authorization': `Bearer ${access_token}`
-      }
-    });
-
-    const user_id = userResponse.data.id;
-
-    // Create a new playlist
-    const playlistResponse = await axios.post(
-      `https://api.spotify.com/v1/users/${user_id}/playlists`,
-      {
-        name: 'New Playlist',
-        public: false
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${access_token}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    const playlist_id = playlistResponse.data.id;
-
-    // Search for tracks with 120 ± 10 BPM
-    const minBpm = 110;
-    const maxBpm = 130;
-    const tracksResponse = await axios.get(
-      `https://api.spotify.com/v1/recommendations?limit=10&seed_genres=pop&min_tempo=${minBpm}&max_tempo=${maxBpm}`,
-      {
+    try {
+      // Get user ID
+      const userResponse = await axios.get('https://api.spotify.com/v1/me', {
         headers: {
           'Authorization': `Bearer ${access_token}`
         }
-      }
-    );
+      });
 
-    const trackUris = tracksResponse.data.tracks.map(track => track.uri);
+      const user_id = userResponse.data.id;
 
-    // Add tracks to the playlist
-    await axios.post(
-      `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`,
-      {
-        uris: trackUris
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${access_token}`,
-          'Content-Type': 'application/json'
+      // Create a new playlist
+      const playlistResponse = await axios.post(
+        `https://api.spotify.com/v1/users/${user_id}/playlists`,
+        {
+          name: playlistName,
+          public: false
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${access_token}`,
+            'Content-Type': 'application/json'
+          }
         }
-      }
-    );
+      );
 
-    const playlistUrl = playlistResponse.data.external_urls.spotify;
-    res.send(`Playlist created and populated: <a href="${playlistUrl}" target="_blank">${playlistUrl}</a>`);
-  } catch (error) {
-    console.error('Error creating playlist', error);
-    res.status(500).send('Error creating playlist');
-  }
-});
+      const playlist_id = playlistResponse.data.id;
+
+      // Search for tracks with 120 ± 10 BPM
+      if (bpm < 50) {
+        bpm = 50;
+      }
+
+      if (bpm > 300) {
+        bpm = 300;
+      }
+
+      const minBpm = bpm - 10;
+      const maxBpm = bpm + 10;
+      const tracksResponse = await axios.get(
+        `https://api.spotify.com/v1/recommendations?limit=10&seed_genres=pop&min_tempo=${minBpm}&max_tempo=${maxBpm}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${access_token}`
+          }
+        }
+      );
+
+      const trackUris = tracksResponse.data.tracks.map(track => track.uri);
+
+      // Add tracks to the playlist
+      await axios.post(
+        `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`,
+        {
+          uris: trackUris
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${access_token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      const playlistUrl = playlistResponse.data.external_urls.spotify;
+      res.send(`Playlist created and populated: <a href="${playlistUrl}" target="_blank">${playlistUrl}</a>`);
+    } catch (error) {
+      console.error('Error creating playlist', error);
+      res.status(500).send('Error creating playlist');
+    }
+  });
+}
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
+  createPlaylist('test', 140);
 });
