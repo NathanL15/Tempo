@@ -4,7 +4,7 @@ import titleimg from "./images/runner-title.jpg"
 const Header = () => {
     return (
         <div id="banner">
-            <img src={titleimg}></img>
+            <img id="titleImg" src={bannerImg} alt="runner" />
         </div>
     )
 }
