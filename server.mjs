@@ -138,9 +138,9 @@ app.get('/create_playlist', async (req, res) => {
   const access_token = req.query.access_token;
   const playlistName = req.query.playlistName || 'New Playlist';
   const genre = req.query.genre || 'pop';
-  const height = 185; // Example height in cm
-  const time = 30*60; // Example time in seconds
-  const distance = 5000; // Example distance in meters
+  const height = req.query.height || 185; // Example height in cm
+  const time = req.query.time || 30*60; // Example time in seconds
+  const distance = req.query.distance || 5000; // Example distance in meters
 
   if (!access_token) {
     return res.send('No access token provided.');
