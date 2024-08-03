@@ -1,0 +1,34 @@
+body {
+    width:1440px;
+    font-family: 'Outfit', sans-serif;
+}
+
+.container {
+    display:flex;
+    flex-direction: column;
+}
+
+#header {
+    display: flex;
+    width:100%;
+    height: 260px;
+    background-color: #4D4B30;
+    margin-top:0;
+    padding:0;
+    align-items: center;
+    
+
+}
+
+#brand-text {
+    font-size:96px;
+    color: white;
+    margin-left: 30px;
+    
+}
+
+#caption {
+    color: #4D4B30;
+    font-size: 38px;
+    text-align: center;
+}
