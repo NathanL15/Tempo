@@ -133,7 +133,7 @@ async function createNewPlaylistAndAddSongs(user_id, playlistName, access_token,
   try {
     if (trackUris.length === 0) {
       console.log('No tracks found to add to the playlist.');
-      return;
+      return null;
     }
 
     const playlistResponse = await axios.post(
@@ -190,8 +190,7 @@ app.get('/create_playlist', async (req, res) => {
     return res.send('No access token provided.');
   }
 
-  //const bpm = calculateBPM(height, distance, time);
-  const bpm = 137;
+  const bpm = calculateBPM(height, distance, time);
   console.log('Calculated BPM:', bpm);
   const minBpm = Math.max(bpm - 10, 50);
   const maxBpm = Math.min(bpm + 10, 300);
@@ -204,7 +203,16 @@ app.get('/create_playlist', async (req, res) => {
 
   const recommendedPlaylistUrl = await createNewPlaylistAndAddSongs(user_id, `Recommended Songs @ ${bpm} BPM`, access_token, recommendedSongsUris);
   const likedSongsPlaylistUrl = await createNewPlaylistAndAddSongs(user_id, `Liked Songs @ ${bpm} BPM`, access_token, likedSongsUris);
-  res.send(`Playlists created and populated: <a href="${recommendedPlaylistUrl}" target="_blank">Recommended Songs</a>, <a href="${likedSongsPlaylistUrl}" target="_blank">Songs from your playlist</a>`);
+  if (!recommendedPlaylistUrl && !likedSongsPlaylistUrl) {
+    return res.send('No songs match requested BPM.')
+  }
+  if (!recommendedPlaylistUrl) {
+    return res.send(`Playlist created and populated: <p>No recommended songs match the requested bpm.</p> <a href="${likedSongsPlaylistUrl}" target="_blank">Songs from your playlist</a>`)
+  }
+  if (!likedSongsPlaylistUrl) {
+    return res.send(`Playlists created and populated: <a href="${recommendedPlaylistUrl}" target="_blank">Recommended Songs</a>, <p>No liked songs match the requested bpm. </p>`)
+  }
+  return res.send(`Playlists created and populated: <a href="${recommendedPlaylistUrl}" target="_blank">Recommended Songs</a>, <a href="${likedSongsPlaylistUrl}" target="_blank">Songs from your playlist</a>`);
 });
 
 app.listen(port, () => {
