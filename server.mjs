@@ -7,6 +7,7 @@ dotenv.config({ path: './account.env' });
 
 const app = express();
 const port = 3000;
+const redirect_uri = 'http://localhost:3000/callback'
 
 app.get('/', (req, res) => {
   res.send('Welcome to my server!');
@@ -15,7 +16,7 @@ app.get('/', (req, res) => {
 // Redirect to Spotify for authentication
 app.get('/login', (req, res) => {
   const scope = 'user-read-private user-read-email playlist-modify-public playlist-modify-private';
-  res.redirect(`https://accounts.spotify.com/authorize?response_type=code&client_id=${process.env.SPOTIFY_CLIENT_ID}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(process.env.REDIRECT_URI)}`);
+  res.redirect(`https://accounts.spotify.com/authorize?response_type=code&client_id=${process.env.SPOTIFY_CLIENT_ID}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(redirect_uri)}`);
 });
 
 // Handle Spotify callback
@@ -32,7 +33,7 @@ app.get('/callback', async (req, res) => {
       querystring.stringify({
         grant_type: 'authorization_code',
         code: code,
-        redirect_uri: process.env.REDIRECT_URI
+        redirect_uri: redirect_uri
       }), {
         headers: {
           'Authorization': `Basic ${Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString('base64')}`,
