@@ -55,6 +55,9 @@ app.get('/create_playlist', async (req, res) => {
   const access_token = req.query.access_token;
   const playlistName = req.query.playlistName || 'New Playlist';
   const bpm = parseInt(req.query.bpm) || 120;
+  let genre_arr = ['hip-hop', 'pop', 'rock', 'country','alternative','edm']
+  
+
 
   if (!access_token) {
     return res.send('No access token provided.');
@@ -91,8 +94,9 @@ app.get('/create_playlist', async (req, res) => {
     const minBpm = Math.max(bpm - 10, 50);
     const maxBpm = Math.min(bpm + 10, 300);
     const tracksResponse = await axios.get(
-      `https://api.spotify.com/v1/recommendations?limit=10&seed_genres=pop&min_tempo=${minBpm}&max_tempo=${maxBpm}`,
+      `https://api.spotify.com/v1/recommendations?limit=10&seed_genres=edm&min_tempo=${minBpm}&max_tempo=${maxBpm}`,
       {
+        
         headers: {
           'Authorization': `Bearer ${access_token}`
         }
