@@ -8,6 +8,7 @@ dotenv.config({ path: './account.env' });
 const app = express();
 const port = 3000;
 const redirect_uri = 'http://localhost:3000/callback'
+let genre_arr = ['hip-hop', 'pop', 'rock', 'country','alternative','edm'];
 
 app.get('/', (req, res) => {
   res.send('Welcome to my server!');
