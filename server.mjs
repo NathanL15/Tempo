@@ -3,7 +3,7 @@ import axios from "axios";
 import querystring from "querystring";
 import dotenv from 'dotenv';
 
-dotenv.config({ path: './account.env' });
+dotenv.config({ path: '.env' });
 
 const app = express();
 const port = 3000;
@@ -16,7 +16,7 @@ app.get('/', (req, res) => {
 
 // Redirect to Spotify for authentication
 app.get('/login', (req, res) => {
-  const scope = 'user-read-private user-read-email playlist-modify-public playlist-modify-private';
+  const scope = 'user-read-private user-read-email playlist-modify-public playlist-modify-private user-library-read';
   res.redirect(`https://accounts.spotify.com/authorize?response_type=code&client_id=${process.env.SPOTIFY_CLIENT_ID}&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(redirect_uri)}`);
 });
 
@@ -76,13 +76,36 @@ async function getRecommendations(bpm, genre, access_token) {
         }
       }
     );
-    const tracks = tracksResponse.data;
-    console.log('Recommended Tracks:', tracks); // Log the response
-
-    const trackUris = tracks.tracks.map(track => track.uri);
+    const tracks = tracksResponse.data.tracks;
+    console.log('Recommended Tracks:');
+    tracks.forEach((item, index) => {
+      console.log(`${index + 1}. ${item.name} by ${item.artists.map(artist => artist.name).join(', ')}`);
+    });
+    const trackUris = tracks.map(track => track.uri);
     return trackUris;
   } catch (e) {
     console.error('Error getting recommendations: ', e);
+  }
+}
+
+async function getLikedSongs(access_token) {
+  try {
+    const songsResponse = await axios.get('https://api.spotify.com/v1/me/tracks', {
+      headers: {
+        'Authorization': `Bearer ${access_token}`
+      },
+      params: {
+        limit: 20, // Number of songs to return (default is 20, max is 50)
+        offset: 0  // The index of the first song to return (use for pagination)
+      }
+    })
+    const likedSongs = songsResponse.data.items;
+    console.log('Liked Songs:');
+    likedSongs.forEach((item, index) => {
+      console.log(`${index + 1}. ${item.track.name} by ${item.track.artists.map(artist => artist.name).join(', ')}`);
+    });
+  } catch (e) {
+    console.error('Error fetching liked songs:', e);
   }
 }
 
@@ -152,7 +175,8 @@ app.get('/create_playlist', async (req, res) => {
   const user_id = await getUserID(access_token);
 
   const trackUris = await getRecommendations(bpm, genre, access_token);
-  console.log('Track URIs:', trackUris); // Log the URIs
+
+  const likedSongs = await getLikedSongs(access_token);
 
   const playlistUrl = await createNewPlaylistAndAddSongs(user_id, playlistName, access_token, trackUris);
   res.send(`Playlist created and populated: <a href="${playlistUrl}" target="_blank">${playlistUrl}</a>`);
