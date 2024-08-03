@@ -76,7 +76,11 @@ async function getRecommendations(bpm, genre, access_token) {
         }
       }
     );
-    return tracksResponse.data
+    const tracks = tracksResponse.data;
+    console.log('Recommended Tracks:', tracks); // Log the response
+
+    const trackUris = tracks.tracks.map(track => track.uri);
+    return trackUris;
   } catch (e) {
     console.error('Error getting recommendations: ', e);
   }
@@ -134,15 +138,11 @@ app.get('/create_playlist', async (req, res) => {
 
   const user_id = await getUserID(access_token);
 
-  const tracks = await getRecommendations(bpm, genre, access_token);
-  console.log('Recommended Tracks:', tracks); // Log the response
-
-  const trackUris = tracks.tracks.map(track => track.uri);
+  const trackUris = await getRecommendations(bpm, genre, access_token);
   console.log('Track URIs:', trackUris); // Log the URIs
 
   const playlistUrl = await createNewPlaylistAndAddSongs(user_id, playlistName, access_token, trackUris);
   res.send(`Playlist created and populated: <a href="${playlistUrl}" target="_blank">${playlistUrl}</a>`);
-  
 });
 
 app.listen(port, () => {
