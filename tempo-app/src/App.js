@@ -1,13 +1,25 @@
-import logo from './logo.svg';
-import './App.css';
-import titleimg from "./images/runner-title.jpg"
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Form from './components/Form';
+import Playlist from './components/Playlist';
 
-import {Header} from './components'
 function App() {
+  useEffect(() => {
+    // Assuming the access token is obtained and stored somewhere
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('access_token');
+    if (token) {
+      localStorage.setItem('accessToken', token);
+    }
+  }, []);
+
   return (
-    <div className="App">
-      <Header />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/form" element={<Form />} />
+        <Route path="/playlist" element={<Playlist />} />
+      </Routes>
+    </Router> 
   );
 }
 
