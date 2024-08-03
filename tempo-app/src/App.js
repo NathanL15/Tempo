@@ -1,12 +1,13 @@
-import logo from './logo.svg';
 import './App.css';
-import titleimg from "./images/runner-title.jpg"
+import { Header } from './components'
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <img src={titleimg}></img>
+        <Header>
+
+        </Header>
       </header>
     </div>
   );
