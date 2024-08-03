@@ -125,7 +125,7 @@ app.get('/create_playlist', async (req, res) => {
     const playlistUrl = playlistResponse.data.external_urls.spotify;
     res.send(`Playlist created and populated: <a href="${playlistUrl}" target="_blank">${playlistUrl}</a>`);
   } catch (error) {
-    console.error('Error creating playlist', error);
+    console.error('Error creating playlist:', error.response?.data || error.message || error);
     res.status(500).send('Error creating playlist');
   }
 });
