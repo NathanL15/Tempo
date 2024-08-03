@@ -50,27 +50,43 @@ app.get('/callback', async (req, res) => {
   }
 });
 
-// Create and populate the playlist
-app.get('/create_playlist', async (req, res) => {
-  const access_token = req.query.access_token;
-  const playlistName = req.query.playlistName || 'New Playlist';
-  const bpm = parseInt(req.query.bpm) || 120;
-
-  if (!access_token) {
-    return res.send('No access token provided.');
-  }
-
+async function getUserID(access_token) {
   try {
-    // Get user ID
     const userResponse = await axios.get('https://api.spotify.com/v1/me', {
       headers: {
         'Authorization': `Bearer ${access_token}`
       }
     });
+    return userResponse.data.id;
+  } catch (e) {
+    console.error('Error getting user id: ', e);
+  }
+}
 
-    const user_id = userResponse.data.id;
+async function getRecommendations(bpm, genre, access_token) {
+  try {
+    const minBpm = Math.max(bpm - 10, 50);
+    const maxBpm = Math.min(bpm + 10, 300);
+    const tracksResponse = await axios.get(
+      `https://api.spotify.com/v1/recommendations?limit=10&seed_genres=${genre}&min_tempo=${minBpm}&max_tempo=${maxBpm}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${access_token}`
+        }
+      }
+    );
+    return tracksResponse.data
+  } catch (e) {
+    console.error('Error getting recommendations: ', e);
+  }
+}
 
-    // Create a new playlist
+async function createNewPlaylistAndAddSongs(user_id, playlistName, access_token, trackUris) {
+  try {
+    if (trackUris.length === 0) {
+      return res.send('No tracks found to add to the playlist.');
+    }
+
     const playlistResponse = await axios.post(
       `https://api.spotify.com/v1/users/${user_id}/playlists`,
       {
@@ -84,32 +100,8 @@ app.get('/create_playlist', async (req, res) => {
         }
       }
     );
-
     const playlist_id = playlistResponse.data.id;
 
-    // Search for tracks with BPM around the specified value
-    const minBpm = Math.max(bpm - 10, 50);
-    const maxBpm = Math.min(bpm + 10, 300);
-    const tracksResponse = await axios.get(
-      `https://api.spotify.com/v1/recommendations?limit=10&seed_genres=pop&min_tempo=${minBpm}&max_tempo=${maxBpm}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${access_token}`
-        }
-      }
-    );
-
-    console.log('Tracks Response:', tracksResponse.data); // Log the response
-
-    const trackUris = tracksResponse.data.tracks.map(track => track.uri);
-
-    console.log('Track URIs:', trackUris); // Log the URIs
-
-    if (trackUris.length === 0) {
-      return res.send('No tracks found to add to the playlist.');
-    }
-
-    // Add tracks to the playlist
     await axios.post(
       `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`,
       {
@@ -122,13 +114,34 @@ app.get('/create_playlist', async (req, res) => {
         }
       }
     );
-
-    const playlistUrl = playlistResponse.data.external_urls.spotify;
-    res.send(`Playlist created and populated: <a href="${playlistUrl}" target="_blank">${playlistUrl}</a>`);
-  } catch (error) {
-    console.error('Error creating playlist:', error.response?.data || error.message || error);
-    res.status(500).send('Error creating playlist');
+    return playlistResponse.data.external_urls.spotify
+  } catch (e) {
+    console.error('Error creating playlist: ', e);
   }
+}
+
+// Create and populate the playlist
+app.get('/create_playlist', async (req, res) => {
+  const access_token = req.query.access_token;
+  const playlistName = req.query.playlistName || 'New Playlist';
+  const genre = req.query.genre || 'pop';
+  const bpm = parseInt(req.query.bpm) || 120;
+
+  if (!access_token) {
+    return res.send('No access token provided.');
+  }
+
+  const user_id = await getUserID(access_token);
+
+  const tracks = await getRecommendations(bpm, genre, access_token);
+  console.log('Recommended Tracks:', tracks); // Log the response
+
+  const trackUris = tracks.tracks.map(track => track.uri);
+  console.log('Track URIs:', trackUris); // Log the URIs
+
+  const playlistUrl = await createNewPlaylistAndAddSongs(user_id, playlistName, access_token, trackUris);
+  res.send(`Playlist created and populated: <a href="${playlistUrl}" target="_blank">${playlistUrl}</a>`);
+  
 });
 
 app.listen(port, () => {
