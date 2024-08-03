@@ -7,8 +7,8 @@ dotenv.config({ path: './account.env' });
 
 const app = express();
 const port = 3000;
-const redirect_uri = 'http://localhost:3000/callback'
-let genre_arr = ['hip-hop', 'pop', 'rock', 'country','alternative','edm'];
+const redirect_uri = 'http://localhost:3000/callback';
+let genre_arr = ['hip-hop', 'pop', 'rock', 'country', 'alternative', 'edm'];
 
 app.get('/', (req, res) => {
   res.send('Welcome to my server!');
@@ -125,16 +125,29 @@ async function createNewPlaylistAndAddSongs(user_id, playlistName, access_token,
   }
 }
 
+function calculateBPM(height, distance, time) {
+  const strideLength = 0.43 * height;
+  const numberOfStrides = distance / (strideLength / 100); // Convert stride length from cm to meters
+  const timeInMinutes = time / 60;
+  const bpm = numberOfStrides / timeInMinutes;
+  return bpm;
+}
+
 // Create and populate the playlist
 app.get('/create_playlist', async (req, res) => {
   const access_token = req.query.access_token;
   const playlistName = req.query.playlistName || 'New Playlist';
   const genre = req.query.genre || 'pop';
-  const bpm = parseInt(req.query.bpm) || 120;
+  const height = 185; // Example height in cm
+  const time = 30*60; // Example time in seconds
+  const distance = 5000; // Example distance in meters
 
   if (!access_token) {
     return res.send('No access token provided.');
   }
+
+  const bpm = calculateBPM(height, distance, time);
+  console.log('Calculated BPM:', bpm);
 
   const user_id = await getUserID(access_token);
 
