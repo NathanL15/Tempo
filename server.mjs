@@ -64,10 +64,8 @@ async function getUserID(access_token) {
   }
 }
 
-async function getRecommendations(bpm, genre, access_token) {
+async function getRecommendations(minBpm, maxBpm, genre, access_token) {
   try {
-    const minBpm = Math.max(bpm - 10, 50);
-    const maxBpm = Math.min(bpm + 10, 300);
     const tracksResponse = await axios.get(
       `https://api.spotify.com/v1/recommendations?limit=10&seed_genres=${genre}&min_tempo=${minBpm}&max_tempo=${maxBpm}`,
       {
@@ -88,31 +86,54 @@ async function getRecommendations(bpm, genre, access_token) {
   }
 }
 
-async function getLikedSongs(access_token) {
+async function getLikedSongs(minBpm, maxBpm, access_token) {
+  let url = 'https://api.spotify.com/v1/me/tracks';
+  let likedSongs = []
+  while (url) {
+    try {
+      const songsResponse = await axios.get(url, {
+        headers: {
+          'Authorization': `Bearer ${access_token}`
+        }
+      })
+      likedSongs = likedSongs.concat(songsResponse.data.items);
+      url = songsResponse.data.next;
+    } catch (e) {
+      console.error('Error fetching liked songs:', e);
+      return;
+    }
+  }
+  const trackIds = likedSongs.map(item => item.track.id);
   try {
-    const songsResponse = await axios.get('https://api.spotify.com/v1/me/tracks', {
+    const audioFeaturesResponse = await axios.get('https://api.spotify.com/v1/audio-features', {
       headers: {
         'Authorization': `Bearer ${access_token}`
       },
       params: {
-        limit: 20, // Number of songs to return (default is 20, max is 50)
-        offset: 0  // The index of the first song to return (use for pagination)
+        ids: trackIds.join(',')
       }
-    })
-    const likedSongs = songsResponse.data.items;
+    });
+    const audioFeatures = audioFeaturesResponse.data.audio_features;
+    const filteredSongs = likedSongs.filter((item, index) => {
+      const tempo = audioFeatures[index]?.tempo;
+      return tempo >= minBpm && tempo <= maxBpm;
+    });
     console.log('Liked Songs:');
-    likedSongs.forEach((item, index) => {
+    filteredSongs.forEach((item, index) => {
       console.log(`${index + 1}. ${item.track.name} by ${item.track.artists.map(artist => artist.name).join(', ')}`);
     });
+    const trackUris = filteredSongs.map(item => item.track.uri);
+    return trackUris;
   } catch (e) {
-    console.error('Error fetching liked songs:', e);
-  }
+    console.error('Error fetching audio features: ', e);
+  }  
 }
 
 async function createNewPlaylistAndAddSongs(user_id, playlistName, access_token, trackUris) {
   try {
     if (trackUris.length === 0) {
-      return res.send('No tracks found to add to the playlist.');
+      console.log('No tracks found to add to the playlist.');
+      return;
     }
 
     const playlistResponse = await axios.post(
@@ -169,17 +190,21 @@ app.get('/create_playlist', async (req, res) => {
     return res.send('No access token provided.');
   }
 
-  const bpm = calculateBPM(height, distance, time);
+  //const bpm = calculateBPM(height, distance, time);
+  const bpm = 137;
   console.log('Calculated BPM:', bpm);
+  const minBpm = Math.max(bpm - 10, 50);
+  const maxBpm = Math.min(bpm + 10, 300);
 
   const user_id = await getUserID(access_token);
 
-  const trackUris = await getRecommendations(bpm, genre, access_token);
+  const recommendedSongsUris = await getRecommendations(minBpm, maxBpm, genre, access_token);
 
-  const likedSongs = await getLikedSongs(access_token);
+  const likedSongsUris = await getLikedSongs(minBpm, maxBpm, access_token);
 
-  const playlistUrl = await createNewPlaylistAndAddSongs(user_id, playlistName, access_token, trackUris);
-  res.send(`Playlist created and populated: <a href="${playlistUrl}" target="_blank">${playlistUrl}</a>`);
+  const recommendedPlaylistUrl = await createNewPlaylistAndAddSongs(user_id, `Recommended Songs @ ${bpm} BPM`, access_token, recommendedSongsUris);
+  const likedSongsPlaylistUrl = await createNewPlaylistAndAddSongs(user_id, `Liked Songs @ ${bpm} BPM`, access_token, likedSongsUris);
+  res.send(`Playlists created and populated: <a href="${recommendedPlaylistUrl}" target="_blank">Recommended Songs</a>, <a href="${likedSongsPlaylistUrl}" target="_blank">Songs from your playlist</a>`);
 });
 
 app.listen(port, () => {
