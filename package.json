@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "express": "^4.19.2",
+    "spotify-web-api-node": "^5.0.2"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
