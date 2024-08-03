@@ -1,70 +1,45 @@
-const express = require('express');
-const SpotifyWebApi = require('spotify-web-api-node');
 require('dotenv').config();
+const express = require('express');
 const axios = require('axios');
-
 const app = express();
 const port = 3000;
 
-app.use(express.json()); // Middleware to parse JSON bodies
-
-const spotifyApi = new SpotifyWebApi({
-  clientId: process.env.SPOTIFY_CLIENT_ID,
-  clientSecret: process.env.SPOTIFY_CLIENT_SECRET
-});
-
-// Function to get a new access token
 async function getAccessToken() {
-  const response = await axios.post('https://accounts.spotify.com/api/token', 'grant_type=client_credentials', {
-    headers: {
-      'Authorization': 'Basic ' + Buffer.from(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET).toString('base64'),
-      'Content-Type': 'application/x-www-form-urlencoded'
+    const client_id = process.env.SPOTIFY_CLIENT_ID;
+    const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
+    const token = Buffer.from(`${client_id}:${client_secret}`, 'utf-8').toString('base64');
+
+    try {
+        const response = await axios.post('https://accounts.spotify.com/api/token', 'grant_type=client_credentials', {
+            headers: {
+                'Authorization': `Basic ${token}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+
+        return response.data.access_token;
+    } catch (error) {
+        console.error('Error fetching access token', error);
+        throw error;
     }
-  });
-  return response.data.access_token;
 }
 
-app.post('/playlists', async (req, res) => {
-  const bpm = parseInt(req.body.bpm);
-  if (isNaN(bpm)) {
-    return res.status(400).send('Invalid BPM');
-  }
-
-  try {
-    // Get a new access token
-    const accessToken = await getAccessToken();
-    spotifyApi.setAccessToken(accessToken);
-
-    const data = await spotifyApi.searchPlaylists('workout', { limit: 10 });
-    const playlists = data.body.playlists.items;
-
-    let filteredPlaylists = [];
-
-    for (let playlist of playlists) {
-      try {
-        const tracksData = await spotifyApi.getPlaylistTracks(playlist.id);
-        const tracks = tracksData.body.items;
-
-        const trackIds = tracks.map(track => track.track.id);
-        const audioFeaturesData = await spotifyApi.getAudioFeaturesForTracks(trackIds);
-        const audioFeatures = audioFeaturesData.body.audio_features;
-
-        const matchingTracks = audioFeatures.filter(track => track.tempo >= bpm - 5 && track.tempo <= bpm + 5);
-        if (matchingTracks.length > 0) {
-          filteredPlaylists.push(playlist);
-        }
-      } catch (trackError) {
-        console.error(`Error fetching tracks or audio features for playlist ${playlist.id}`, trackError);
-      }
+app.get('/playlists', async (req, res) => {
+    const tempo = req.query.tempo;
+    try {
+        const token = await getAccessToken();
+        const response = await axios.get(`https://api.spotify.com/v1/recommendations?limit=10&seed_genres=pop&target_tempo=${tempo}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        res.json(response.data);
+    } catch (error) {
+        console.error('Error fetching playlists', error);
+        res.status(500).send('Error fetching playlists');
     }
-
-    res.json(filteredPlaylists);
-  } catch (error) {
-    console.error('Error fetching playlists', error);
-    res.status(500).send('Error fetching playlists');
-  }
 });
 
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+    console.log(`Server is running on http://localhost:${port}`);
 });
