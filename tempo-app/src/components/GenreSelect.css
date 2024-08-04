@@ -1,0 +1,116 @@
+body {
+    width:100%;
+    height: 700px;
+    font-family: 'Outfit', sans-serif;
+}
+
+.container {
+    display:flex;
+    flex-direction: column;
+}
+
+#header {
+    display: flex;
+    width:100%;
+    height: 135px;
+    background-color: #4D4B30;
+    margin:0;
+    padding:0;
+    align-items: center;
+    
+
+}
+
+#brand-text {
+    font-size:50px;
+    color: white;
+    margin-left: 30px;
+    
+}
+
+#main-background {
+    display:block;
+    height:700px;
+
+}
+
+#main-text {
+    text-align:center;
+    text-justify:center;
+    float:left;
+    padding-top: 140px;
+    padding-left:50px;
+    margin-left:70px;
+
+}
+
+#large-text {
+    font-size:56px;
+    width:350px;
+    height:100px;
+    margin-bottom:0;
+    padding-left:30px;
+    color:#4D4B30;
+}
+
+#small-text {
+    padding-left:30px;
+    padding-top:95px;
+    font-size: 20px;
+    color:#4D4B30;
+    
+}
+
+#selection-background {
+    width:35%;
+    height:500px;
+    background:#4D4B30;
+    float:right;
+    margin-right:150px;
+    margin-top:80px;
+    border-radius:50px;
+    display:inline;
+    align-items:center;
+}
+
+form {
+    max-width: 300px;
+    position: relative;
+    margin: 50px auto 0;
+    font-size: 15px;
+}
+.radiobtn {
+    position: relative;
+    display: block;
+    text-align:center;
+    padding-left:auto;
+    padding-right:auto;
+    padding-top:10px;
+
+}
+.radiobtn label {
+    display: block;
+    background:white;
+    color:black;
+    border-radius: 10px;
+    padding: 10px 20px;
+    border: 2px solid black;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+input[type="radio"] {
+    display: none;
+    position: absolute;
+    width: 100%;
+    appearance: none;
+}
+input[type="radio"]:checked + label {
+    background:#F4CCA6;
+    color:#fff;
+}
+
+input[type="submit"] {
+    display:inline-block;
+    border: 1 px solid black;
+    margin-top:10px;
+}
