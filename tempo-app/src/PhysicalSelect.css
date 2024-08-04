@@ -65,20 +65,20 @@ body {
     justify-items:center;
 }
 
-.qa-section {
+form {
     text-align:center;
     margin-top:80px;
     height: 50px;
 
 }
 
-.qa-section p {
+label {
     font-size: 24px;
     color: #DAA38B;
 
 }
 
-.a-section {
+input[type=text] {
     height:50px;
     width: 350px;
     background:white;
@@ -86,22 +86,17 @@ body {
     margin-right:auto;
     border-radius:50px;
     margin-bottom:30px;
+    font-size: 40px;
+    text-align:center;
+    padding-top:5px;
 
 }
 
-#submit-physical-button {
+input[type="submit"] {
     display:inline-block;
-    background: #482216;
-    padding-left:20px;
-    padding-right:20px;
-    margin-top:80px;
-    margin-left:325px;
     border: 1 px solid black;
     
     
+    
 
-}
-
-#submit-button-text {
-    color:white;
 }
