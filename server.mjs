@@ -2,13 +2,16 @@ import express from "express";
 import axios from "axios";
 import querystring from "querystring";
 import dotenv from 'dotenv';
+import cors from 'cors';
 
 dotenv.config({ path: '.env' });
 
 const app = express();
-const port = 3000;
-const redirect_uri = 'http://localhost:3000/callback';
+const port = 3001;
+const redirect_uri = 'http://localhost:3000/form';
 let genre_arr = ['hip-hop', 'pop', 'rock', 'country', 'alternative', 'edm'];
+
+app.use(cors());
 
 app.get('/', (req, res) => {
   res.send('Welcome to my server!');
@@ -44,7 +47,7 @@ app.get('/callback', async (req, res) => {
     );
 
     const access_token = response.data.access_token;
-    res.redirect(`/create_playlist?access_token=${access_token}`);
+    res.redirect(`/form?access_token=${access_token}`);
   } catch (error) {
     console.error('Error during authentication', error);
     res.send('Error during authentication');

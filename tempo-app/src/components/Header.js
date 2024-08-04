@@ -3,12 +3,15 @@ import bannerImg from "./images/runner-tinted.png"
 import './Header.css'
 
 const Header = () => {
+    const handleLogin = () => {
+        window.location.href = 'http://localhost:3001/login';
+    };
     return (
         <div id="banner">
             <div id="title-container">
                 <h1 id="title">TEMPO</h1>
 
-                <div id="header-btn">Get Started</div>
+                <div id="header-btn"><button onClick={handleLogin}>Login with Spotify</button></div>
             </div>
 
             <div id="side-phrase">
