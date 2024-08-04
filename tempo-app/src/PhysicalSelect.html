@@ -22,23 +22,16 @@
             </div>
 
             <div id="selection-background">
-               <div class="qa-section" id = qa-section1>
-                    <p><b>How far is your run? (meters)</b></p>
-                    <div class="a-section" id="a-section1"></div>
-               </div>
-               <div class="qa-section" id = qa-section2>
-                    <p><b>How quickly will you complete it? (minutes)</b></p>
-                    <div class="a-section" id="a-section2"></div>
-                </div>
-                <div class="qa-section" id = qa-section3>
-                    <p><b>How tall are you? (centimeters)</b></p>
-                    <div class="a-section" id="a-section3"></div>
-                </div>
-                <div id="submit-physical-button">
-                    <div id="submit-button-text">
-                        <p><b>Submit</b></p>
-                    </div>
-                </div>
+                <form>
+                    <label for="distance">How far is your run? (m)</label><br>
+                    <input type="text" id="distance" name="distance" value=""><br><br>
+                    <label for="time">How quickly will you complete it? (mins)</label><br>
+                    <input type="text" id="time" name="time" value=""><br><br>
+                    <label for="height">How tall are you? (cm)</label><br>
+                    <input type="text" id="height" name="height" value=""><br><br>
+                    <input type="submit" value="SUBMIT">
+                  </form> 
+                
             </div>
         </div>
         
