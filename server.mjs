@@ -8,8 +8,7 @@ dotenv.config({ path: '.env' });
 
 const app = express();
 const port = 3001;
-const redirect_uri = 'http://localhost:3000/form';
-let genre_arr = ['hip-hop', 'pop', 'rock', 'country', 'alternative', 'edm'];
+const redirect_uri = 'http://localhost:3001/callback';
 
 app.use(cors());
 
@@ -47,7 +46,8 @@ app.get('/callback', async (req, res) => {
     );
 
     const access_token = response.data.access_token;
-    res.redirect(`/form?access_token=${access_token}`);
+    console.log('at:', access_token);
+    res.redirect(`http://localhost:3000/form?access_token=${access_token}`);
   } catch (error) {
     console.error('Error during authentication', error);
     res.send('Error during authentication');
@@ -193,10 +193,11 @@ app.get('/create_playlist', async (req, res) => {
     return res.send('No access token provided.');
   }
 
-  const bpm = calculateBPM(height, distance, time);
+  let bpm = calculateBPM(height, distance, time);
   console.log('Calculated BPM:', bpm);
   const minBpm = Math.max(bpm - 10, 50);
   const maxBpm = Math.min(bpm + 10, 300);
+  bpm = Math.round(bpm);
 
   const user_id = await getUserID(access_token);
 
@@ -206,16 +207,26 @@ app.get('/create_playlist', async (req, res) => {
 
   const recommendedPlaylistUrl = await createNewPlaylistAndAddSongs(user_id, `Recommended Songs @ ${bpm} BPM`, access_token, recommendedSongsUris);
   const likedSongsPlaylistUrl = await createNewPlaylistAndAddSongs(user_id, `Liked Songs @ ${bpm} BPM`, access_token, likedSongsUris);
+  // if (!recommendedPlaylistUrl && !likedSongsPlaylistUrl) {
+  //   return res.send('No songs match requested BPM.')
+  // }
+  // if (!recommendedPlaylistUrl) {
+  //   return res.send(`Playlist created and populated: <p>No recommended songs match the requested bpm.</p> <a href="${likedSongsPlaylistUrl}" target="_blank">Songs from your playlist</a>`)
+  // }
+  // if (!likedSongsPlaylistUrl) {
+  //   return res.send(`Playlists created and populated: <a href="${recommendedPlaylistUrl}" target="_blank">Recommended Songs</a>, <p>No liked songs match the requested bpm. </p>`)
+  // }
+  // return res.send(`Playlists created and populated: <a href="${recommendedPlaylistUrl}" target="_blank">Recommended Songs</a>, <a href="${likedSongsPlaylistUrl}" target="_blank">Songs from your playlist</a>`);
   if (!recommendedPlaylistUrl && !likedSongsPlaylistUrl) {
-    return res.send('No songs match requested BPM.')
+    // return res.send('No songs match requested BPM.')
   }
   if (!recommendedPlaylistUrl) {
-    return res.send(`Playlist created and populated: <p>No recommended songs match the requested bpm.</p> <a href="${likedSongsPlaylistUrl}" target="_blank">Songs from your playlist</a>`)
+    // return res.send(likedSongsPlaylistUrl)
   }
   if (!likedSongsPlaylistUrl) {
-    return res.send(`Playlists created and populated: <a href="${recommendedPlaylistUrl}" target="_blank">Recommended Songs</a>, <p>No liked songs match the requested bpm. </p>`)
+    return res.send(recommendedPlaylistUrl)
   }
-  return res.send(`Playlists created and populated: <a href="${recommendedPlaylistUrl}" target="_blank">Recommended Songs</a>, <a href="${likedSongsPlaylistUrl}" target="_blank">Songs from your playlist</a>`);
+  return res.send(recommendedPlaylistUrl);
 });
 
 app.listen(port, () => {

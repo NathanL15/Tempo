@@ -4,3 +4,4 @@ export { default as BotSection } from './BotSection';
 export { default as Footer } from './Footer';
 export { default as Login } from './Login';
 export { default as GenreSelect } from './GenreSelect';
+export { default as PhysicalSelect } from './PhysicalSelect';

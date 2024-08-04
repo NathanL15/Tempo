@@ -4,23 +4,18 @@ import Home from './components/Home';
 import Form from './components/Form';
 import Login from  './components/Login'
 import Playlist from './components/Playlist';
+import PhysicalSelect from './components/PhysicalSelect';
 import { GenreSelect } from './components';
 
 function App() {
-  const [accessToken, setAccessToken] = useState('');
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get('access_token');
-    if (token) {
-      setAccessToken(token);
-    }
-  }, []);
+  
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/form" element={<GenreSelect />} />
+        <Route path="/stats" element={<PhysicalSelect />} />
         <Route path="/playlist" element={<Playlist />} />
       </Routes>
     </Router>
