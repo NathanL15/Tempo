@@ -1,0 +1,43 @@
+#bot-container {
+    position: absolute;
+    top: 1974px;
+    float: left;
+    width: 100%;
+    height: 1024px;
+    background: white;
+}
+
+#bot-image-container {
+    width: 35%;
+    height: 400px;
+    position: absolute;
+    top: 100px;
+    right: 150px;
+}
+
+#bot-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    object-fit: cover;
+    box-shadow: 2px 2px 20px black;
+}
+
+#bot-text-container {
+    width: 45%;
+    height: 50%;
+    background: white;
+    position: absolute;
+    top: 0;
+    left: 100px;
+}
+
+#bot-title {
+    font-size: 650%;
+    color: #4d4b30;
+}
+
+#bot-subtext {
+    font-size: 220%;
+    color: #4d4b30;
+}

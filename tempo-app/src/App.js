@@ -1,12 +1,25 @@
-import logo from './logo.svg';
 import './App.css';
-import titleimg from "./images/runner-title.jpg"
+import { Header, TopSection, BotSection, Footer } from './components'
 
-import {Header} from './components'
 function App() {
   return (
     <div className="App">
-      <Header />
+      <link href='https://fonts.googleapis.com/css?family=Outfit' rel='stylesheet'></link>
+      <Header>
+      
+      </Header>
+
+      <TopSection>
+   
+      </TopSection>
+
+      <BotSection>
+        
+      </BotSection>
+
+      <Footer>
+        
+      </Footer>
     </div>
   );
 }

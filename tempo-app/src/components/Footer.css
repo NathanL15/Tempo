@@ -1,0 +1,41 @@
+#footer-container {
+    background-color: #4d4b30;
+    width: 100%;
+    height: 1024px;
+    position: absolute;
+    top: 2998px;
+}
+
+#end-container {
+    margin-top: 13%;
+    width: 40%;
+    margin-left: 30%;
+    margin-right: 30%;
+    text-align: center;
+}
+
+#end {
+    color: #feebca;
+    font-size: 400%;
+}
+
+#footer-btn {
+    background: #482216;
+    box-shadow: 1px 1px 10px #1c1c1c;
+    border-radius: 10px;
+    width: 220px;
+    height: 60px;
+    color: white;
+    text-align: center;
+    font-size: 150%;
+    line-height: 60px;
+    position: absolute;
+    left: 43%;
+    transition-duration: 0.3s;
+}
+
+#footer-btn:hover {
+    background: #57291a;
+    box-shadow: 1px 1px 10px #eee;
+    transition-duration: 0.3s;
+}
