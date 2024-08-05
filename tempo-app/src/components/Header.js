@@ -11,7 +11,7 @@ const Header = () => {
             <div id="title-container">
                 <h1 id="title">TEMPO</h1>
 
-                <div id="header-btn"><button onClick={handleLogin}>Login with Spotify</button></div>
+                <div><button id="header-btn" onClick={handleLogin}>Login with Spotify</button></div>
             </div>
 
             <div id="side-phrase">
