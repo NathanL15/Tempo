@@ -1,5 +1,5 @@
 ## Tempo
-This project was developed at StarterHacks 2024 @ University of Waterloo. Developed by Peter Macdonald, Max Jin, Nathan Lu, Sam Jian and Johan Naresh.
+This project was developed at HackThe6ix 2024 @ University of Toronto. Developed by Nathan Lu, Max Jin, Sam Jian and Andrew Shim.
 
 ## Inspiration
 Running: freedom and ecstasy for some, and a daunting task for many. It has been a staple in cardiovascular health since the dawn of time. While running has been proven to significantly improve both physical and mental health, why do so few people do it—even gym-goers? Running is often seen as repetitive, boring, and difficult to keep pace with, which can lead to a lack of motivation. This inspired us to create Tempo, a web app that generates a playlist based on your running goals.
